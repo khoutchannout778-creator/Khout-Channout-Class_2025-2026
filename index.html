@@ -703,7 +703,11 @@
             id: Date.now(),
             name, attendance, hw, quizAssign, monthly, total, paid: isPaid
         };
-
+const firebaseConfig = {
+    ...
+    messagingSenderId: "PASTE_MESSAGING_SENDER_ID_HERE",
+    appId: "PASTE_APP_ID_HERE"
+};
         database[currentGrade][currentMonth].push(newStudent);
         saveData();
         updateUI();
