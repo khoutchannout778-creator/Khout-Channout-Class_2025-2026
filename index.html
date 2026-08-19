@@ -645,7 +645,16 @@
             emptyDatabase[grade][month] = [];
         });
     });
-
+// Initialize Firebase Realtime Cloud Database Configuration
+    const firebaseConfig = {
+        apiKey: "AIzaSyBP8mPjcW8LB6j0kNojKjIt-d-By1Pe1Vw",
+        authDomain: "khoutchannout2025-2026.firebaseapp.com",
+        databaseURL: "https://kse-classroom-management-default-rtdb.firebaseio.com",
+        projectId: "khoutchannout2025-2026",
+        storageBucket: "khoutchannout2025-2026.firebasestorage.app",
+        messagingSenderId: "760658150849",
+        appId: "1:760658150849:web:7c85046b9eee57df7d9b40"
+    };
     let currentUserRole = null;
     let currentGrade = "Grade 7";
     let currentMonth = "August";
