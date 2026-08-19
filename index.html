@@ -3,39 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Classroom Management System</title>
+    <title>Classroom & Fee Management System</title>
     
-    <!-- Firebase Cloud Database SDKs for Cross-Device Synchronization -->
+    <!-- Firebase Cloud Database SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
     <style>
         :root {
-            --primary: #1e3a8a; /* Elegant Navy Blue */
+            --primary: #1e3a8a;
             --primary-hover: #1e40af;
-            --secondary: #e5e7eb;
+            --secondary: #f3f4f6;
             --success: #16a34a;
             --danger: #dc2626;
             --warning: #d97706;
             --dark: #1f2937;
             --light: #ffffff;
             --border: #d1d5db;
-            --bg-color: #f3f4f6;
+            --bg-color: #f8fafc;
         }
 
         body {
-            font-family: 'Times New Roman', Times, serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: var(--bg-color);
             margin: 0;
             padding: 0;
             color: var(--dark);
         }
 
-        /* Header */
+        /* Header & Sync Bar */
         header {
             background: linear-gradient(135deg, var(--primary), #3b82f6);
             color: var(--light);
-            padding: 25px 20px;
+            padding: 20px;
             text-align: center;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
             position: relative;
@@ -43,17 +43,45 @@
         
         header h1 {
             margin: 0;
-            font-size: 32px;
-            letter-spacing: 1px;
+            font-size: 26px;
+            letter-spacing: 0.5px;
             text-transform: uppercase;
         }
+
+        .sync-badge {
+            position: absolute;
+            top: 15px;
+            left: 20px;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+            background-color: rgba(255,255,255,0.2);
+        }
+        .sync-online { color: #4ade80; }
+        .sync-offline { color: #f87171; }
+
+        .logout-btn {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            background: transparent;
+            color: white;
+            border: 1px solid white;
+            padding: 6px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+        .logout-btn:hover { background: rgba(255,255,255,0.2); }
 
         /* Login Section */
         #login-section {
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 60vh;
+            min-height: 70vh;
             padding: 0 15px;
         }
 
@@ -61,10 +89,10 @@
             background: var(--light);
             padding: 40px;
             border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
             text-align: center;
             width: 100%;
-            max-width: 400px;
+            max-width: 380px;
         }
 
         .login-box h2 {
@@ -78,8 +106,7 @@
             width: 100%;
             margin-bottom: 15px;
             padding: 12px;
-            font-size: 16px;
-            font-family: 'Times New Roman', Times, serif;
+            font-size: 15px;
             font-weight: bold;
             border: none;
             border-radius: 6px;
@@ -89,16 +116,13 @@
 
         .btn-teacher { background-color: var(--primary); color: white; }
         .btn-teacher:hover { background-color: var(--primary-hover); }
-        
         .btn-student { background-color: #4b5563; color: white; }
         .btn-student:hover { background-color: #374151; }
 
-        /* Main Application (Hidden by default) */
-        #app-section {
-            display: none;
-        }
+        /* Main App Section */
+        #app-section { display: none; }
 
-        /* Tabs / Sheets */
+        /* Navigation Tabs */
         .tabs {
             display: flex;
             justify-content: center;
@@ -110,9 +134,8 @@
         .tab-btn {
             background: none;
             border: none;
-            padding: 12px 24px;
-            font-size: 16px;
-            font-family: 'Times New Roman', Times, serif;
+            padding: 12px 20px;
+            font-size: 15px;
             font-weight: bold;
             color: #6b7280;
             cursor: pointer;
@@ -125,7 +148,7 @@
             border-bottom-color: var(--primary);
         }
 
-        /* Controls Section (Month Selector) */
+        /* Controls */
         .month-selector-container {
             display: flex;
             justify-content: center;
@@ -135,45 +158,44 @@
         }
         .month-selector-container label {
             font-weight: bold;
-            font-size: 18px;
+            font-size: 16px;
         }
         .month-select {
             padding: 8px 15px;
-            font-size: 16px;
-            font-family: 'Times New Roman', Times, serif;
+            font-size: 15px;
             border-radius: 6px;
             border: 1px solid var(--border);
+            background: white;
         }
 
-        /* Main Container */
+        /* Container & Cards */
         .container {
-            max-width: 1300px;
-            margin: 30px auto;
-            padding: 0 20px;
+            max-width: 1200px;
+            margin: 25px auto;
+            padding: 0 15px;
         }
 
-        /* Cards */
         .card {
             background: var(--light);
             border-radius: 10px;
-            padding: 25px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-            margin-bottom: 30px;
+            padding: 20px 25px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.04);
+            margin-bottom: 25px;
             border-top: 4px solid var(--primary);
         }
         .card h2 {
             margin-top: 0;
             color: var(--primary);
-            border-bottom: 1px solid var(--secondary);
-            padding-bottom: 15px;
-            font-size: 24px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 12px;
+            font-size: 20px;
         }
 
         /* Form Grid */
         .form-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
             margin-bottom: 20px;
         }
         .form-group {
@@ -181,79 +203,64 @@
             flex-direction: column;
         }
         .form-group label {
-            font-weight: bold;
-            font-size: 15px;
-            margin-bottom: 8px;
+            font-weight: 600;
+            font-size: 13px;
+            margin-bottom: 6px;
             color: #374151;
         }
         .form-group input, .form-group select {
-            padding: 10px;
+            padding: 9px;
             border: 1px solid var(--border);
             border-radius: 6px;
-            font-family: 'Times New Roman', Times, serif;
-            font-size: 15px;
+            font-size: 14px;
         }
-        .form-group input:focus, .form-group select:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 2px rgba(30, 58, 138, 0.2);
-        }
-        
         .btn-submit {
             background-color: var(--primary);
             color: var(--light);
             border: none;
             padding: 12px 25px;
-            font-size: 16px;
+            font-size: 15px;
             border-radius: 6px;
-            font-family: 'Times New Roman', Times, serif;
             font-weight: bold;
             cursor: pointer;
-            transition: 0.3s;
             width: 100%;
-            max-width: 300px;
+            max-width: 250px;
             display: block;
             margin: 0 auto;
         }
         .btn-submit:hover { background-color: var(--primary-hover); }
 
-        /* Table Responsive */
-        .table-responsive { 
-            overflow-x: auto; 
-            -webkit-overflow-scrolling: touch;
+        /* Tables */
+        .table-responsive {
+            overflow-x: auto;
         }
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 15px;
-            font-size: 15px;
-            min-width: 800px;
+            margin-top: 10px;
+            font-size: 14px;
+            min-width: 750px;
         }
         th, td {
             border: 1px solid var(--border);
-            padding: 12px;
+            padding: 10px 12px;
             text-align: center;
         }
         th {
             background-color: var(--primary);
             color: white;
-            font-weight: bold;
+            font-weight: 600;
         }
         tr:nth-child(even) { background-color: #f9fafb; }
-        tr:hover { background-color: #f3f4f6; }
-        
-        .fail-name { text-decoration: line-through; color: var(--danger); font-weight: bold; }
-        .grade-A { color: var(--success); font-weight: bold; }
-        .grade-F { color: var(--danger); font-weight: bold; }
-        
-        /* Payment Status Styles */
+
+        /* Badges & Actions */
         .status-paid {
             background-color: #dcfce7;
             color: var(--success);
             padding: 4px 8px;
             border-radius: 4px;
             font-weight: bold;
-            white-space: nowrap;
+            font-size: 12px;
         }
         .status-overdue {
             background-color: #fee2e2;
@@ -261,7 +268,7 @@
             padding: 4px 8px;
             border-radius: 4px;
             font-weight: bold;
-            white-space: nowrap;
+            font-size: 12px;
         }
         .status-pending {
             background-color: #fef3c7;
@@ -269,118 +276,56 @@
             padding: 4px 8px;
             border-radius: 4px;
             font-weight: bold;
-            white-space: nowrap;
+            font-size: 12px;
         }
 
-        .btn-pay {
-            background-color: var(--success);
-            color: white;
+        .btn-action {
             border: none;
-            padding: 6px 10px;
+            padding: 5px 10px;
             border-radius: 4px;
             cursor: pointer;
-            font-family: 'Times New Roman', Times, serif;
-            font-size: 13px;
+            font-size: 12px;
+            font-weight: bold;
             margin: 2px;
         }
-        .btn-pay:hover { background-color: #15803d; }
+        .btn-pay { background-color: var(--success); color: white; }
+        .btn-unpay { background-color: var(--warning); color: white; }
+        .btn-delete { background-color: var(--danger); color: white; }
 
-        .btn-unpay {
-            background-color: var(--warning);
-            color: white;
-            border: none;
-            padding: 6px 10px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-family: 'Times New Roman', Times, serif;
-            font-size: 13px;
-            margin: 2px;
-        }
-        
         /* Honor Roll */
         .honor-roll {
             display: flex;
             flex-wrap: wrap;
-            gap: 20px;
+            gap: 15px;
             justify-content: center;
-            margin-top: 20px;
+            margin-top: 15px;
         }
         .honor-card {
-            background: linear-gradient(135deg, #ffffff 0%, #f9fafb 100%);
+            background: #ffffff;
             border: 2px solid gold;
-            border-radius: 10px;
-            padding: 20px 30px;
+            border-radius: 8px;
+            padding: 15px 20px;
             text-align: center;
-            min-width: 200px;
-            position: relative;
-            flex: 1 1 200px;
-            max-width: 300px;
+            flex: 1 1 180px;
+            max-width: 250px;
         }
-        .honor-card.rank-1 { border-color: gold; box-shadow: 0 8px 15px rgba(255, 215, 0, 0.3); }
-        .honor-card.rank-2 { border-color: silver; box-shadow: 0 8px 15px rgba(192, 192, 192, 0.3); }
-        .honor-card.rank-3 { border-color: #cd7f32; box-shadow: 0 8px 15px rgba(205, 127, 50, 0.3); }
-        
-        .medal { font-size: 32px; margin-bottom: 10px; }
-        .honor-name { font-size: 20px; font-weight: bold; margin: 5px 0; color: var(--dark); }
-        .honor-details { margin: 0; font-size: 15px; color: #4b5563; }
-        
-        .delete-btn {
-            background-color: var(--danger);
-            color: white;
-            border: none;
-            padding: 6px 10px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-family: 'Times New Roman', Times, serif;
-            font-size: 13px;
-            margin: 2px;
-        }
-        .delete-btn:hover { background-color: #b91c1c; }
+        .honor-card.rank-1 { border-color: #eab308; box-shadow: 0 4px 10px rgba(234, 179, 8, 0.2); }
+        .honor-card.rank-2 { border-color: #94a3b8; box-shadow: 0 4px 10px rgba(148, 163, 184, 0.2); }
+        .honor-card.rank-3 { border-color: #b45309; box-shadow: 0 4px 10px rgba(180, 83, 9, 0.2); }
 
-        .logout-btn {
-            position: absolute;
-            top: 25px;
-            right: 20px;
-            background: transparent;
-            color: white;
-            border: 1px solid white;
-            padding: 8px 15px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-family: 'Times New Roman', Times, serif;
-            font-weight: bold;
-        }
-        .logout-btn:hover { background: rgba(255,255,255,0.2); }
-
-        /* Mobile Optimization Rules */
         @media (max-width: 768px) {
             header h1 { font-size: 20px; }
-            .logout-btn {
-                position: static;
-                margin-top: 10px;
-                display: inline-block;
-            }
-            .tabs {
-                justify-content: flex-start;
-                overflow-x: auto;
-                flex-wrap: nowrap;
-                padding-bottom: 5px;
-            }
-            .tab-btn {
-                padding: 10px 16px;
-                font-size: 14px;
-                white-space: nowrap;
-            }
-            .container { padding: 0 10px; margin: 15px auto; }
-            .card { padding: 15px; }
-            .card h2 { font-size: 20px; }
-            .honor-card { min-width: 140px; padding: 15px; }
+            .sync-badge { position: static; display: inline-block; margin-bottom: 10px; }
+            .logout-btn { position: static; display: inline-block; margin-top: 10px; }
+            .tabs { overflow-x: auto; flex-wrap: nowrap; justify-content: flex-start; }
+            .tab-btn { font-size: 13px; padding: 10px 14px; white-space: nowrap; }
         }
     </style>
 </head>
 <body>
 
 <header>
+    <div id="sync-status" class="sync-badge">Connecting Cloud...</div>
     <h1>Classroom Management System</h1>
     <button id="logout-btn" class="logout-btn" style="display: none;" onclick="logout()">Logout</button>
 </header>
@@ -397,15 +342,11 @@
 <!-- MAIN APPLICATION SECTION -->
 <div id="app-section">
     
-    <div class="tabs" id="tabs-container">
-        <!-- Tabs generated by JS -->
-    </div>
+    <div class="tabs" id="tabs-container"></div>
 
     <div class="month-selector-container">
-        <label for="month-select">ប្រចាំខែ (Month): </label>
-        <select id="month-select" class="month-select" onchange="changeMonth(this.value)">
-            <!-- Months dynamically populated -->
-        </select>
+        <label for="month-select">Select Month: </label>
+        <select id="month-select" class="month-select" onchange="changeMonth(this.value)"></select>
     </div>
 
     <div class="container">
@@ -413,54 +354,52 @@
         <!-- Honor Roll -->
         <div class="card">
             <h2>🏆 Honor Roll - <span id="current-grade-title">Grade 7</span> (<span id="current-month-title">August</span>)</h2>
-            <div class="honor-roll" id="honor-roll-container">
-                <!-- Honor Roll details here -->
-            </div>
+            <div class="honor-roll" id="honor-roll-container"></div>
         </div>
 
-        <!-- Data Entry Form (Hidden for students) -->
+        <!-- Score Entry Form (Teacher Only) -->
         <div class="card" id="form-card">
-            <h2>📝 Student Score Entry</h2>
-            <p style="font-size: 14px; color: #4b5563; margin-bottom: 20px;">
-                <em>Formula: Attendance (10%) + Homework (20%) + Quiz & Assignment (10%) + Monthly Test (60%) = 100%</em>
+            <h2>📝 Student Score & Payment Entry</h2>
+            <p style="font-size: 13px; color: #6b7280; margin-bottom: 15px;">
+                <em>Formula: Attendance (10%) + Homework (20%) + Quiz & Assignment (10%) + Monthly Test (60%) = Total (100%)</em>
             </p>
             <form id="student-form">
                 <div class="form-grid">
                     <div class="form-group">
                         <label>Student Name</label>
-                        <input type="text" id="stuName" required placeholder="e.g., John Doe">
+                        <input type="text" id="stuName" required placeholder="Full Name">
                     </div>
                     <div class="form-group">
                         <label>Attendance (Max 10)</label>
-                        <input type="number" id="attendance" min="0" max="10" step="0.01" required>
+                        <input type="number" id="attendance" min="0" max="10" step="0.1" required>
                     </div>
                     <div class="form-group">
                         <label>Homework (Max 20)</label>
-                        <input type="number" id="hw" min="0" max="20" step="0.01" required>
+                        <input type="number" id="hw" min="0" max="20" step="0.1" required>
                     </div>
                     <div class="form-group">
                         <label>Quiz & Assign. (Max 10)</label>
-                        <input type="number" id="quizAssign" min="0" max="10" step="0.01" required>
+                        <input type="number" id="quizAssign" min="0" max="10" step="0.1" required>
                     </div>
                     <div class="form-group">
                         <label>Monthly Test (Max 60)</label>
-                        <input type="number" id="monthly" min="0" max="60" step="0.01" required>
+                        <input type="number" id="monthly" min="0" max="60" step="0.1" required>
                     </div>
                     <div class="form-group">
-                        <label>Payment Status</label>
+                        <label>Initial Payment Status</label>
                         <select id="paymentStatus">
-                            <option value="Unpaid">មិនទាន់បង់ (Unpaid)</option>
-                            <option value="Paid">បង់រួច (Paid)</option>
+                            <option value="Unpaid">Unpaid</option>
+                            <option value="Paid">Paid</option>
                         </select>
                     </div>
                 </div>
-                <button type="submit" class="btn-submit">Save & Calculate Grade</button>
+                <button type="submit" class="btn-submit">Save Student Record</button>
             </form>
         </div>
 
-        <!-- Results Table -->
+        <!-- Results Sheet -->
         <div class="card">
-            <h2>📊 Results Sheet</h2>
+            <h2>📊 Performance & Tuition Fee Tracker</h2>
             <div class="table-responsive">
                 <table>
                     <thead>
@@ -469,17 +408,15 @@
                             <th>Student Name</th>
                             <th>Attendance (10%)</th>
                             <th>Homework (20%)</th>
-                            <th>Quiz & Ass. (10%)</th>
+                            <th>Quiz/Assign (10%)</th>
                             <th>Monthly (60%)</th>
                             <th>Total (100%)</th>
                             <th>Grade</th>
-                            <th>Payment Status (DueDate: 25th)</th>
-                            <th id="action-header">Action</th>
+                            <th>Tuition Fee Status (Due: 25th)</th>
+                            <th id="action-header">Actions</th>
                         </tr>
                     </thead>
-                    <tbody id="table-body">
-                        <!-- Data rows generated by JS -->
-                    </tbody>
+                    <tbody id="table-body"></tbody>
                 </table>
             </div>
         </div>
@@ -502,7 +439,7 @@
     let currentGrade = 'Grade 7';
     let currentMonth = 'August';
     
-    // Cloud Realtime Database Integration (Firebase Public Endpoint)
+    // Initialize Firebase Realtime Cloud Database
     const firebaseConfig = {
         databaseURL: "https://kse-classroom-management-default-rtdb.firebaseio.com"
     };
@@ -516,39 +453,42 @@
     let database = {};
     gradesList.forEach(g => {
         database[g] = {};
-        monthsList.forEach(m => {
-            database[g][m] = [];
-        });
+        monthsList.forEach(m => { database[g][m] = []; });
     });
 
-    // Real-Time Cloud Listener across all devices (Mobile & Desktop)
+    // Cloud Listener & Sync Indicator
+    const syncStatus = document.getElementById('sync-status');
+    
+    db.ref('.info/connected').on('value', (snap) => {
+        if (snap.val() === true) {
+            syncStatus.innerText = "● Cloud Connected";
+            syncStatus.className = "sync-badge sync-online";
+        } else {
+            syncStatus.innerText = "○ Offline Mode";
+            syncStatus.className = "sync-badge sync-offline";
+        }
+    });
+
+    // Real-Time Cloud Data Synchronizer across Desktop & Mobile Devices
     db.ref('cmsDatabase').on('value', (snapshot) => {
         const cloudData = snapshot.val();
         if (cloudData) {
             database = cloudData;
-            // Ensure schema integrity
+            // Maintain Data Schema Integrity
             gradesList.forEach(g => {
                 if (!database[g]) database[g] = {};
                 monthsList.forEach(m => {
                     if (!database[g][m]) database[g][m] = [];
                 });
             });
-            // Update local storage backup
             localStorage.setItem('cmsDatabase', JSON.stringify(database));
-            if (currentUserRole) {
-                updateUI();
-            }
+            if (currentUserRole) updateUI();
         }
-    }, (error) => {
-        // Fallback to LocalStorage if offline
-        const localData = JSON.parse(localStorage.getItem('cmsDatabase'));
-        if (localData) database = localData;
     });
 
-    // Login Logic
+    // Authentication Logic
     function login(role) {
-        let password = prompt(`Please enter the ${role} password:`);
-        
+        let password = prompt(`Enter ${role} password:`);
         if (role === 'Teacher' && password === TEACHER_PASS) {
             currentUserRole = 'teacher';
             startApp();
@@ -556,7 +496,7 @@
             currentUserRole = 'student';
             startApp();
         } else if (password !== null) {
-            alert("Incorrect Password! Please try again.");
+            alert("Incorrect password! Access denied.");
         }
     }
 
@@ -572,7 +512,6 @@
         document.getElementById('app-section').style.display = 'block';
         document.getElementById('logout-btn').style.display = 'block';
 
-        // Adjust UI based on Role (Teachers can edit; Students view only)
         if (currentUserRole === 'student') {
             document.getElementById('form-card').style.display = 'none';
             document.getElementById('action-header').style.display = 'none';
@@ -584,14 +523,12 @@
         init();
     }
 
-    // Initialize UI
     function init() {
         renderTabs();
         renderMonthDropdown();
         updateUI();
     }
 
-    // Render Tabs
     function renderTabs() {
         const container = document.getElementById('tabs-container');
         container.innerHTML = '';
@@ -609,7 +546,6 @@
         });
     }
 
-    // Render Month Selector
     function renderMonthDropdown() {
         const monthSelect = document.getElementById('month-select');
         monthSelect.innerHTML = '';
@@ -629,10 +565,8 @@
         updateUI();
     }
 
-    // Calculation Logic
     function calculateGradeAndRank(students) {
         students.sort((a, b) => b.total - a.total);
-        
         let currentRank = 1;
         for (let i = 0; i < students.length; i++) {
             if (i > 0 && students[i].total === students[i-1].total) {
@@ -653,10 +587,10 @@
         return students;
     }
 
-    // Calculate Overdue Days based on dynamic real-time date
-    function getPaymentStatusText(student) {
+    // Dynamic 25th Monthly Payment Engine
+    function calculatePaymentStatus(student) {
         if (student.paid) {
-            return `<span class="status-paid">បង់រួច (Paid)</span>`;
+            return `<span class="status-paid">Paid</span>`;
         }
 
         const today = new Date();
@@ -665,25 +599,22 @@
 
         if (currentDay > dueDate) {
             const overdueDays = currentDay - dueDate;
-            return `<span class="status-overdue">លើស ${overdueDays} ថ្ងៃ (Overdue ${overdueDays} days)</span>`;
+            return `<span class="status-overdue">Overdue by ${overdueDays} Day(s)</span>`;
         } else if (currentDay === dueDate) {
-            return `<span class="status-overdue">ដល់ថ្ងៃបង់ប្រាក់ (Due Today)</span>`;
+            return `<span class="status-overdue">Due Today (25th)</span>`;
         } else {
             const daysLeft = dueDate - currentDay;
-            return `<span class="status-pending">នៅសល់ ${daysLeft} ថ្ងៃ (Due in ${daysLeft} days)</span>`;
+            return `<span class="status-pending">Due in ${daysLeft} Day(s)</span>`;
         }
     }
 
-    // Toggle Payment Status (Teacher Only)
     function togglePayment(index) {
         if (currentUserRole !== 'teacher') return;
-        let student = database[currentGrade][currentMonth][index];
-        student.paid = !student.paid;
+        database[currentGrade][currentMonth][index].paid = !database[currentGrade][currentMonth][index].paid;
         saveData();
         updateUI();
     }
 
-    // Render Table and Honor Roll
     function updateUI() {
         let students = database[currentGrade][currentMonth] || [];
         students = calculateGradeAndRank(students);
@@ -696,78 +627,69 @@
 
         if (students.length === 0) {
             let colSpan = currentUserRole === 'teacher' ? 10 : 9;
-            tbody.innerHTML = `<tr><td colspan="${colSpan}">No data available for ${currentMonth}...</td></tr>`;
-            honorRoll.innerHTML = `<p style="color:#666;">No honor roll data available for ${currentMonth}</p>`;
+            tbody.innerHTML = `<tr><td colspan="${colSpan}">No records found for ${currentGrade} - ${currentMonth}.</td></tr>`;
+            honorRoll.innerHTML = `<p style="color:#6b7280;">No honor roll data available</p>`;
             return;
         }
 
-        // Render Table
         students.forEach((student, index) => {
-            let nameHtml = student.grade === 'F' ? `<span class="fail-name">${student.name}</span>` : student.name;
-            let gradeClass = student.grade === 'A' ? 'grade-A' : (student.grade === 'F' ? 'grade-F' : '');
-
-            let paymentDisplay = getPaymentStatusText(student);
+            let nameDisplay = student.grade === 'F' ? `<span style="color:var(--danger); font-weight:bold;">${student.name}</span>` : student.name;
+            let paymentBadge = calculatePaymentStatus(student);
 
             let actionCell = '';
             if (currentUserRole === 'teacher') {
-                let payToggleBtn = student.paid 
-                    ? `<button class="btn-unpay" onclick="togglePayment(${index})">Mark Unpaid</button>` 
-                    : `<button class="btn-pay" onclick="togglePayment(${index})">បង់រួច</button>`;
+                let payBtn = student.paid 
+                    ? `<button class="btn-action btn-unpay" onclick="togglePayment(${index})">Mark Unpaid</button>` 
+                    : `<button class="btn-action btn-pay" onclick="togglePayment(${index})">Mark Paid</button>`;
                 
                 actionCell = `<td>
-                    ${payToggleBtn}
-                    <button class="delete-btn" onclick="deleteStudent(${index})">Delete</button>
+                    ${payBtn}
+                    <button class="btn-action btn-delete" onclick="deleteStudent(${index})">Delete</button>
                 </td>`;
             }
 
             tbody.innerHTML += `
                 <tr>
-                    <td><strong>${student.rank}</strong></td>
-                    <td>${nameHtml}</td>
+                    <td><strong>#${student.rank}</strong></td>
+                    <td>${nameDisplay}</td>
                     <td>${student.attendance}</td>
                     <td>${student.hw}</td>
                     <td>${student.quizAssign}</td>
                     <td>${student.monthly}</td>
                     <td><strong>${student.total}</strong></td>
-                    <td class="${gradeClass}">${student.grade}</td>
-                    <td>${paymentDisplay}</td>
+                    <td><strong>${student.grade}</strong></td>
+                    <td>${paymentBadge}</td>
                     ${actionCell}
                 </tr>
             `;
         });
 
-        // Render Honor Roll (Top 3)
+        // Top 3 Honor Roll
         let topStudents = students.filter(s => s.rank <= 3 && s.grade !== 'F');
         let medals = ['🥇', '🥈', '🥉'];
         
         topStudents.forEach(student => {
             honorRoll.innerHTML += `
                 <div class="honor-card rank-${student.rank}">
-                    <div class="medal">${medals[student.rank - 1] || '🏅'}</div>
-                    <div class="honor-name">${student.name}</div>
-                    <p class="honor-details">Rank: ${student.rank} | Total: ${student.total}</p>
+                    <div style="font-size: 28px;">${medals[student.rank - 1] || '🏅'}</div>
+                    <div style="font-weight: bold; font-size: 16px; margin: 5px 0;">${student.name}</div>
+                    <p style="margin:0; font-size: 13px; color:#4b5563;">Rank #${student.rank} | Total Score: ${student.total}</p>
                 </div>
             `;
         });
     }
 
-    // Handle Form Submission (Teacher Only)
+    // Add Student
     document.getElementById('student-form').addEventListener('submit', function(e) {
         e.preventDefault();
         if (currentUserRole !== 'teacher') return;
         
-        const name = document.getElementById('stuName').value;
+        const name = document.getElementById('stuName').value.trim();
         const attendance = parseFloat(document.getElementById('attendance').value) || 0;
         const hw = parseFloat(document.getElementById('hw').value) || 0;
         const quizAssign = parseFloat(document.getElementById('quizAssign').value) || 0;
         const monthly = parseFloat(document.getElementById('monthly').value) || 0;
         const isPaid = document.getElementById('paymentStatus').value === 'Paid';
-
-        // Ensure max bounds
-        if(attendance > 10 || hw > 20 || quizAssign > 10 || monthly > 60) {
-            alert("Please ensure input values do not exceed the maximum allowed points.");
-            return;
-        }
 
         const total = parseFloat((attendance + hw + quizAssign + monthly).toFixed(2));
 
@@ -782,7 +704,6 @@
         this.reset();
     });
 
-    // Delete Student (Teacher Only)
     function deleteStudent(index) {
         if (currentUserRole !== 'teacher') return;
         if(confirm("Are you sure you want to delete this student's record?")) {
@@ -792,7 +713,6 @@
         }
     }
 
-    // Save Data to Cloud Database & Local Storage Backup
     function saveData() {
         db.ref('cmsDatabase').set(database);
         localStorage.setItem('cmsDatabase', JSON.stringify(database));
