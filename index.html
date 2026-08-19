@@ -444,31 +444,19 @@
 
     // ==========================================================================
     // Firebase Configuration
-    // ⚠️ All fields below must come from ONE single Firebase project.
-    // Firebase Console → ⚙️ Project settings → scroll to "Your apps" →
-    // copy the whole config object at once (don't mix values from
-    // different projects/tutorials).
-    // NOTE: the databaseURL below points to a different project name
-    // ("kse-classroom-management") than projectId/authDomain
-    // ("khoutchannout2025-2026"). That mismatch is very likely to cause
-    // connection or "permission denied" errors — double check it in your
-    // own Firebase console and replace it with the URL shown under
-    // Realtime Database for THIS project.
     // ==========================================================================
-    // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
-  apiKey: "AIzaSyBP8mPjcW8LB6j0kNojKjIt-d-By1Pe1Vw",
-  authDomain: "khoutchannout2025-2026.firebaseapp.com",
-  projectId: "khoutchannout2025-2026",
-  storageBucket: "khoutchannout2025-2026.firebasestorage.app",
-  messagingSenderId: "760658150849",
-  appId: "1:760658150849:web:7c85046b9eee57df7d9b40",
-  measurementId: "G-64L4VQF6TL"
-};
+    const firebaseConfig = {
+        apiKey: "AIzaSyBP8mPjcW8LB6j0kNojKjIt-d-By1Pe1Vw",
+        authDomain: "khoutchannout2025-2026.firebaseapp.com",
+        // រក្សា databaseURL នេះដដែលដើម្បីឲ្យ Realtime Database អាចភ្ជាប់បាន
+        databaseURL: "https://kse-classroom-management-default-rtdb.firebaseio.com", 
+        projectId: "khoutchannout2025-2026",
+        storageBucket: "khoutchannout2025-2026.firebasestorage.app",
+        messagingSenderId: "760658150849",
+        appId: "1:760658150849:web:7c85046b9eee57df7d9b40",
+        measurementId: "G-64L4VQF6TL"
+    };
 
-    // Firebase is optional at runtime: if the SDK fails to load (blocked
-    // network, offline, wrong config) the whole app must still work using
-    // localStorage only, instead of crashing on the very first line below.
     let firebaseAvailable = false;
     let db = null;
     let cloudConnected = false;
@@ -509,8 +497,7 @@ const firebaseConfig = {
         return obj;
     }
 
-    // Load any previously saved data immediately so the app is usable
-    // right away even before Firebase connects (or if it never does).
+    // Load any previously saved data immediately
     try {
         const cached = localStorage.getItem('cmsDatabase');
         if (cached) database = ensureSchema(JSON.parse(cached));
@@ -518,14 +505,12 @@ const firebaseConfig = {
         console.error('Could not read local cache:', e);
     }
 
-    // Escapes user-entered text before it is inserted via innerHTML,
-    // so a student name can never be interpreted as HTML/script.
     function escapeHtml(str) {
         const d = document.createElement('div');
         d.textContent = str ?? '';
         return d.innerHTML;
     }
-    
+
     // Sync Status Indicator
     const syncStatus = document.getElementById('sync-status');
     function renderSyncBadge() {
@@ -558,19 +543,17 @@ const firebaseConfig = {
             console.error('Connection listener error:', err);
         });
 
-        // Real-Time Cloud Data Synchronizer across Desktop & Mobile Devices
+        // Real-Time Cloud Data Synchronizer
         db.ref('cmsDatabase').on('value', (snapshot) => {
             dataSyncError = null;
             const cloudData = snapshot.val();
             if (cloudData) {
                 database = ensureSchema(cloudData);
-                try { localStorage.setItem('cmsDatabase', JSON.stringify(database)); } catch (e) { /* storage may be full/unavailable */ }
+                try { localStorage.setItem('cmsDatabase', JSON.stringify(database)); } catch (e) { }
                 if (currentUserRole) updateUI();
             }
             renderSyncBadge();
         }, (err) => {
-            // Fires e.g. when Firebase Realtime Database security rules
-            // deny read access (the default for new projects).
             console.error('Cloud read blocked:', err);
             dataSyncError = err.message;
             renderSyncBadge();
@@ -678,7 +661,6 @@ const firebaseConfig = {
         return students;
     }
 
-    // Dynamic 25th Monthly Payment Engine
     function calculatePaymentStatus(student) {
         if (student.paid) {
             return `<span class="status-paid">Paid</span>`;
@@ -756,7 +738,6 @@ const firebaseConfig = {
             `;
         });
 
-        // Top 3 Honor Roll
         let topStudents = students.filter(s => s.rank <= 3 && s.grade !== 'F');
         let medals = ['🥇', '🥈', '🥉'];
         
@@ -772,7 +753,6 @@ const firebaseConfig = {
         });
     }
 
-    // Add Student
     document.getElementById('student-form').addEventListener('submit', function(e) {
         e.preventDefault();
         if (currentUserRole !== 'teacher') return;
@@ -809,8 +789,6 @@ const firebaseConfig = {
     }
 
     function saveData() {
-        // Always save locally first — this must succeed even with no
-        // internet connection or a misconfigured Firebase project.
         try {
             localStorage.setItem('cmsDatabase', JSON.stringify(database));
         } catch (e) {
@@ -819,8 +797,6 @@ const firebaseConfig = {
 
         if (firebaseAvailable && db) {
             db.ref('cmsDatabase').set(database).catch(err => {
-                // Most commonly a Realtime Database security-rules
-                // "permission_denied" error. Data is still safe locally.
                 console.error('Cloud save failed:', err);
                 dataSyncError = err.message;
                 renderSyncBadge();
