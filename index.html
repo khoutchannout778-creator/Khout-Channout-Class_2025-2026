@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Classroom Management System</title>
+    <style>
+        :root {
+            --primary: #1e3a8a;
+            --primary-hover: #1e40af;
+            --secondary: #e5e7eb;
+            --success: #16a34a;
+            --danger: #dc2626;
+            --warning: #d97706;
+            --dark: #1f2937;
+            --light: #ffffff;
+            --border: #d1d5db;
+            --bg-color: #f3f4f6;
+        }
+
+        body {
+            font-family: 'Times New Roman', Times, serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 0;
+            color: var(--dark);
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary), #3b82f6);
+            color: var(--light);
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+            position: relative;
+        }
+
+        header h1 { margin: 0; font-size: 26px; }
+
+        .storage-warning {
+            background-color: #fef2f2;
+            color: var(--danger);
+            border: 1px solid #fca5a5;
+            padding: 12px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 14px;
+            display: none;
+        }
+
+        #login-section {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 60vh;
+            padding: 0 15px;
+        }
+
+        .login-box {
+            background: var(--light);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            text-align: center;
+            width: 100%;
+            max-width: 380px;
+        }
+
+        .login-btn {
+            display: block;
+            width: 100%;
+            margin-bottom: 12px;
+            padding: 12px;
+            font-size: 16px;
+            font-family: 'Times New Roman', Times, serif;
+            font-weight: bold;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .btn-teacher { background-color: var(--primary); color: white; }
+        .btn-student { background-color: #4b5563; color: white; }
+
+        #app-section { display: none; }
+
+        .tabs {
+            display: flex;
+            justify-content: center;
+            background-color: var(--light);
+            border-bottom: 2px solid var(--border);
+            padding: 10px 10px 0 10px;
+            flex-wrap: wrap;
+        }
+        .tab-btn {
+            background: none;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            font-family: 'Times New Roman', Times, serif;
+            font-weight: bold;
+            color: #6b7280;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+        }
+        .tab-btn.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        .month-selector-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 15px;
+            gap: 10px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 0 15px;
+        }
+
+        .card {
+            background: var(--light);
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+            border-top: 4px solid var(--primary);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        .form-group { display: flex; flex-direction: column; }
+        .form-group label { font-weight: bold; font-size: 14px; margin-bottom: 5px; }
+        .form-group input, .form-group select {
+            padding: 8px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-family: 'Times New Roman', Times, serif;
+        }
+
+        .btn-submit {
+            background-color: var(--primary);
+            color: var(--light);
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 6px;
+            font-family: 'Times New Roman', Times, serif;
+            font-weight: bold;
+            cursor: pointer;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .table-responsive { overflow-x: auto; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            min-width: 700px;
+        }
+        th, td { border: 1px solid var(--border); padding: 10px; text-align: center; }
+        th { background-color: var(--primary); color: white; }
+
+        .btn-pay { background: var(--success); color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; }
+        .delete-btn { background: var(--danger); color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; }
+        .btn-action { background: #4f46e5; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-family: 'Times New Roman', Times, serif; margin: 3px; }
+    </style>
+</head>
+<body>
+
+<div id="storage-warning" class="storage-warning">
+    ⚠️ ប្រយ័ត្ន៖ Browser កំពុងទប់ស្កាត់ LocalStorage (ដោយសារបើក File ផ្ទាល់)! ទិន្នន័យអាចនឹងបាត់បង់ពេល Refresh។ សូមប្រើប្រាស់ប៊ូតុង "Export Backup" ដើម្បីរក្សាទុក File។
+</div>
+
+<header>
+    <h1>Classroom Management System</h1>
+    <button id="logout-btn" onclick="logout()" style="display:none; position:absolute; right:15px; top:18px; background:none; border:1px solid white; color:white; padding:5px 10px; border-radius:4px; cursor:pointer;">Logout</button>
+</header>
+
+<div id="login-section">
+    <div class="login-box">
+        <h2 style="color:var(--primary); margin-top:0;">System Access</h2>
+        <button class="login-btn btn-teacher" onclick="login('Teacher')">Log In as Teacher</button>
+        <button class="login-btn btn-student" onclick="login('Student')">Log In as Student</button>
+    </div>
+</div>
+
+<div id="app-section">
+    <div class="tabs" id="tabs-container"></div>
+
+    <div class="month-selector-container">
+        <label for="month-select"><strong>ប្រចាំខែ (Month): </strong></label>
+        <select id="month-select" style="padding:5px 10px; font-family:'Times New Roman';" onchange="changeMonth(this.value)"></select>
+    </div>
+
+    <div class="container">
+        <div class="card" id="teacher-tools" style="display:none;">
+            <h3 style="margin-top:0;">💾 ការពារការបាត់បង់ទិន្នន័យ (Data Backup & Restore)</h3>
+            <button class="btn-action" onclick="exportData()">📥 ទាញយកទិន្នន័យរក្សាទុក (Export Backup File)</button>
+            <button class="btn-action" onclick="document.getElementById('import-file').click()">📤 បញ្ចូលទិន្នន័យចាស់ (Import Backup File)</button>
+            <input type="file" id="import-file" style="display:none;" accept=".json" onchange="importData(event)">
+        </div>
+
+        <div class="card" id="form-card">
+            <h3 style="margin-top:0; color:var(--primary);">📝 បញ្ចូលពិន្ទុសិស្ស (Score Entry)</h3>
+            <form id="student-form">
+                <div class="form-grid">
+                    <div class="form-group"><label>ឈ្មោះសិស្ស</label><input type="text" id="stuName" required></div>
+                    <div class="form-group"><label>វត្តមាន (Max 10)</label><input type="number" id="attendance" min="0" max="10" step="0.1" required></div>
+                    <div class="form-group"><label>កិច្ចការផ្ទះ (Max 20)</label><input type="number" id="hw" min="0" max="20" step="0.1" required></div>
+                    <div class="form-group"><label>Quiz/Ass. (Max 10)</label><input type="number" id="quizAssign" min="0" max="10" step="0.1" required></div>
+                    <div class="form-group"><label>ប្រឡងខែ (Max 60)</label><input type="number" id="monthly" min="0" max="60" step="0.1" required></div>
+                    <div class="form-group">
+                        <label>ស្ថានភាពបង់ប្រាក់</label>
+                        <select id="paymentStatus">
+                            <option value="Unpaid">មិនទាន់បង់</option>
+                            <option value="Paid">បង់រួច</option>
+                        </select>
+                    </div>
+                </div>
+                <button type="submit" class="btn-submit">រក្សាទុកទិន្នន័យ (Save Student)</button>
+            </form>
+        </div>
+
+        <div class="card">
+            <h3 style="margin-top:0; color:var(--primary);">📊 តារាងលទ្ធផល - <span id="current-grade-title">Grade 7</span> (<span id="current-month-title">August</span>)</h3>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ចំណាត់ថ្នាក់</th>
+                            <th>ឈ្មោះសិស្ស</th>
+                            <th>វត្តមាន (10%)</th>
+                            <th>Homework (20%)</th>
+                            <th>Quiz (10%)</th>
+                            <th>ប្រឡង (60%)</th>
+                            <th>សរុប (100%)</th>
+                            <th>Grade</th>
+                            <th>ស្ថានភាពបង់ប្រាក់</th>
+                            <th id="action-header">សកម្មភាព</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-body"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const TEACHER_PASS = "teacher123";
+    const STUDENT_PASS = "student123";
+    let currentUserRole = null;
+
+    const gradesList = ['Grade 7', 'Grade 8', 'Grade 9', 'Grade 10', 'Grade 11', 'Grade 12'];
+    const monthsList = ['August', 'September', 'October', 'November', 'December', 'January', 'February', 'March', 'April', 'May', 'June', 'July'];
+    
+    let currentGrade = 'Grade 7';
+    let currentMonth = 'August';
+    let database = {};
+
+    // Safe Storage Functions
+    function isLocalStorageAvailable() {
+        try {
+            const testKey = '__test__';
+            localStorage.setItem(testKey, testKey);
+            localStorage.removeItem(testKey);
+            return true;
+        } catch (e) {
+            return false;
+        }
+    }
+
+    function loadDatabase() {
+        if (isLocalStorageAvailable()) {
+            const saved = localStorage.getItem('cmsDatabase_v2');
+            if (saved) {
+                try { database = JSON.parse(saved); } catch(e) { database = {}; }
+            }
+        } else {
+            document.getElementById('storage-warning').style.display = 'block';
+        }
+
+        gradesList.forEach(g => {
+            if (!database[g]) database[g] = {};
+            monthsList.forEach(m => {
+                if (!database[g][m]) database[g][m] = [];
+            });
+        });
+    }
+
+    function saveData() {
+        if (isLocalStorageAvailable()) {
+            try {
+                localStorage.setItem('cmsDatabase_v2', JSON.stringify(database));
+            } catch (e) {
+                alert("មិនអាចរក្សាទុកក្នុង Browser បានឡើយ! សូមប្រើប្រាស់ប៊ូតុង Export Backup។");
+            }
+        }
+    }
+
+    function login(role) {
+        let pass = prompt(`សូមបញ្ចូលពាក្យសម្ងាត់សម្រាប់ ${role}:`);
+        if (role === 'Teacher' && pass === TEACHER_PASS) {
+            currentUserRole = 'teacher';
+            startApp();
+        } else if (role === 'Student' && pass === STUDENT_PASS) {
+            currentUserRole = 'student';
+            startApp();
+        } else if (pass !== null) {
+            alert("ពាក្យសម្ងាត់មិនត្រឹមត្រូវទេ!");
+        }
+    }
+
+    function logout() {
+        currentUserRole = null;
+        document.getElementById('login-section').style.display = 'flex';
+        document.getElementById('app-section').style.display = 'none';
+        document.getElementById('logout-btn').style.display = 'none';
+    }
+
+    function startApp() {
+        document.getElementById('login-section').style.display = 'none';
+        document.getElementById('app-section').style.display = 'block';
+        document.getElementById('logout-btn').style.display = 'block';
+
+        if (currentUserRole === 'student') {
+            document.getElementById('form-card').style.display = 'none';
+            document.getElementById('teacher-tools').style.display = 'none';
+            document.getElementById('action-header').style.display = 'none';
+        } else {
+            document.getElementById('form-card').style.display = 'block';
+            document.getElementById('teacher-tools').style.display = 'block';
+            document.getElementById('action-header').style.display = 'table-cell';
+        }
+
+        loadDatabase();
+        renderTabs();
+        renderMonthDropdown();
+        updateUI();
+    }
+
+    function renderTabs() {
+        const container = document.getElementById('tabs-container');
+        container.innerHTML = '';
+        gradesList.forEach(grade => {
+            const btn = document.createElement('button');
+            btn.className = `tab-btn ${grade === currentGrade ? 'active' : ''}`;
+            btn.innerText = grade;
+            btn.onclick = () => {
+                currentGrade = grade;
+                document.getElementById('current-grade-title').innerText = grade;
+                renderTabs();
+                updateUI();
+            };
+            container.appendChild(btn);
+        });
+    }
+
+    function renderMonthDropdown() {
+        const select = document.getElementById('month-select');
+        select.innerHTML = '';
+        monthsList.forEach(m => {
+            const opt = document.createElement('option');
+            opt.value = m;
+            opt.innerText = m;
+            if (m === currentMonth) opt.selected = true;
+            select.appendChild(opt);
+        });
+        document.getElementById('current-month-title').innerText = currentMonth;
+    }
+
+    function changeMonth(m) {
+        currentMonth = m;
+        document.getElementById('current-month-title').innerText = m;
+        updateUI();
+    }
+
+    function updateUI() {
+        let students = database[currentGrade][currentMonth] || [];
+        
+        // Calculate Rank & Grade
+        students.sort((a, b) => b.total - a.total);
+        students.forEach((s, i) => {
+            s.rank = i + 1;
+            if (s.total >= 90) s.grade = 'A';
+            else if (s.total >= 80) s.grade = 'B';
+            else if (s.total >= 70) s.grade = 'C';
+            else if (s.total >= 60) s.grade = 'D';
+            else if (s.total >= 50) s.grade = 'E';
+            else s.grade = 'F';
+        });
+
+        const tbody = document.getElementById('table-body');
+        tbody.innerHTML = '';
+
+        if (students.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="10">មិនទាន់មានទិន្នន័យសម្រាប់ខែ ${currentMonth} នៅឡើយទេ...</td></tr>`;
+            return;
+        }
+
+        students.forEach((s, idx) => {
+            let actionTd = currentUserRole === 'teacher' ? `
+                <td>
+                    <button class="btn-pay" onclick="togglePay(${idx})">${s.paid ? 'បង់រួច' : 'មិនទាន់បង់'}</button>
+                    <button class="delete-btn" onclick="deleteStudent(${idx})">លុប</button>
+                </td>
+            ` : '';
+
+            tbody.innerHTML += `
+                <tr>
+                    <td><strong>${s.rank}</strong></td>
+                    <td>${s.name}</td>
+                    <td>${s.attendance}</td>
+                    <td>${s.hw}</td>
+                    <td>${s.quizAssign}</td>
+                    <td>${s.monthly}</td>
+                    <td><strong>${s.total}</strong></td>
+                    <td><strong>${s.grade}</strong></td>
+                    <td><span style="color:${s.paid ? 'green':'red'}; font-weight:bold;">${s.paid ? 'Paid' : 'Unpaid'}</span></td>
+                    ${actionTd}
+                </tr>
+            `;
+        });
+    }
+
+    document.getElementById('student-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const name = document.getElementById('stuName').value;
+        const att = parseFloat(document.getElementById('attendance').value) || 0;
+        const hw = parseFloat(document.getElementById('hw').value) || 0;
+        const quiz = parseFloat(document.getElementById('quizAssign').value) || 0;
+        const monthScore = parseFloat(document.getElementById('monthly').value) || 0;
+        const paid = document.getElementById('paymentStatus').value === 'Paid';
+
+        const total = parseFloat((att + hw + quiz + monthScore).toFixed(2));
+
+        database[currentGrade][currentMonth].push({
+            name, attendance: att, hw, quizAssign: quiz, monthly: monthScore, total, paid
+        });
+
+        saveData();
+        updateUI();
+        this.reset();
+        alert("បានរក្សាទុកទិន្នន័យសិស្សរួចរាល់!");
+    });
+
+    function togglePay(idx) {
+        database[currentGrade][currentMonth][idx].paid = !database[currentGrade][currentMonth][idx].paid;
+        saveData();
+        updateUI();
+    }
+
+    function deleteStudent(idx) {
+        if(confirm("តើអ្នកពិតជាចង់លុបទិន្នន័យសិស្សនេះមែនទេ?")) {
+            database[currentGrade][currentMonth].splice(idx, 1);
+            saveData();
+            updateUI();
+        }
+    }
+
+    function exportData() {
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(database, null, 2));
+        const dl = document.createElement('a');
+        dl.setAttribute("href", dataStr);
+        dl.setAttribute("download", `Backup_CMS_${currentGrade}.json`);
+        document.body.appendChild(dl);
+        dl.click();
+        dl.remove();
+    }
+
+    function importData(event) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                database = JSON.parse(e.target.result);
+                saveData();
+                updateUI();
+                alert("បញ្ចូលទិន្នន័យជោគជ័យ!");
+            } catch(err) {
+                alert("File មិនត្រឹមត្រូវឡើយ!");
+            }
+        };
+        if(event.target.files[0]) reader.readAsText(event.target.files[0]);
+    }
+</script>
+</body>
+</html>
