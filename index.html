@@ -459,7 +459,6 @@
     const firebaseConfig = {
         apiKey: "AIzaSyBP8mPjcW8LB6j0kNojKjIt-d-By1Pe1Vw",
         authDomain: "khoutchannout2025-2026.firebaseapp.com",
-        // រក្សា databaseURL នេះដដែលដើម្បីឲ្យ Realtime Database អាចភ្ជាប់បាន
         databaseURL: "https://kse-classroom-management-default-rtdb.firebaseio.com", 
         projectId: "khoutchannout2025-2026",
         storageBucket: "khoutchannout2025-2026.firebasestorage.app",
@@ -484,7 +483,7 @@
             db = firebase.database();
             firebaseAvailable = true;
         } catch (err) {
-            console.error('Firebase unavailable — continuing in Local-Only mode:', err);
+            console.error('Firebase unavailable:', err);
             firebaseAvailable = false;
         }
     }
@@ -492,10 +491,13 @@
 
     // Default structure initialization
     let database = {};
-    gradesList.forEach(g => {
-        database[g] = {};
-        monthsList.forEach(m => { database[g][m] = []; });
-    });
+    function initEmptyDatabase() {
+        gradesList.forEach(g => {
+            database[g] = {};
+            monthsList.forEach(m => { database[g][m] = []; });
+        });
+    }
+    initEmptyDatabase();
 
     function ensureSchema(obj) {
         obj = obj && typeof obj === 'object' ? obj : {};
@@ -508,14 +510,6 @@
         return obj;
     }
 
-    // Load any previously saved data immediately
-    try {
-        const cached = localStorage.getItem('cmsDatabase');
-        if (cached) database = ensureSchema(JSON.parse(cached));
-    } catch (e) {
-        console.error('Could not read local cache:', e);
-    }
-
     function escapeHtml(str) {
         const d = document.createElement('div');
         d.textContent = str ?? '';
@@ -526,9 +520,8 @@
     const syncStatus = document.getElementById('sync-status');
     function renderSyncBadge() {
         if (!firebaseAvailable) {
-            syncStatus.innerText = '○ Local Only (No Cloud)';
+            syncStatus.innerText = '○ No Cloud Connection';
             syncStatus.className = 'sync-badge sync-offline';
-            syncStatus.title = 'Firebase could not be reached. Data is saved on this device only.';
         } else if (dataSyncError) {
             syncStatus.innerText = '⚠ Blocked by Firebase Rules';
             syncStatus.className = 'sync-badge sync-offline';
@@ -536,11 +529,9 @@
         } else if (cloudConnected) {
             syncStatus.innerText = '● Cloud Connected';
             syncStatus.className = 'sync-badge sync-online';
-            syncStatus.title = 'Synced with your Firebase Realtime Database.';
         } else {
             syncStatus.innerText = '○ Offline Mode';
             syncStatus.className = 'sync-badge sync-offline';
-            syncStatus.title = 'No connection to Firebase servers right now.';
         }
     }
     renderSyncBadge();
@@ -554,15 +545,16 @@
             console.error('Connection listener error:', err);
         });
 
-        // Real-Time Cloud Data Synchronizer
+        // Real-Time Cloud Data Synchronizer (No local storage backup used)
         db.ref('cmsDatabase').on('value', (snapshot) => {
             dataSyncError = null;
             const cloudData = snapshot.val();
             if (cloudData) {
                 database = ensureSchema(cloudData);
-                try { localStorage.setItem('cmsDatabase', JSON.stringify(database)); } catch (e) { }
-                if (currentUserRole) updateUI();
+            } else {
+                initEmptyDatabase(); // If cloud is totally empty, reset
             }
+            if (currentUserRole) updateUI();
             renderSyncBadge();
         }, (err) => {
             console.error('Cloud read blocked:', err);
@@ -696,7 +688,6 @@
         if (currentUserRole !== 'teacher') return;
         database[currentGrade][currentMonth][index].paid = !database[currentGrade][currentMonth][index].paid;
         saveData();
-        updateUI();
     }
 
     function updateUI() {
@@ -786,7 +777,6 @@
 
         database[currentGrade][currentMonth].push(newStudent);
         saveData();
-        updateUI();
         this.reset();
     });
 
@@ -795,17 +785,10 @@
         if(confirm("Are you sure you want to delete this student's record?")) {
             database[currentGrade][currentMonth].splice(index, 1);
             saveData();
-            updateUI();
         }
     }
 
     function saveData() {
-        try {
-            localStorage.setItem('cmsDatabase', JSON.stringify(database));
-        } catch (e) {
-            console.error('Local save failed:', e);
-        }
-
         if (firebaseAvailable && db) {
             db.ref('cmsDatabase').set(database).catch(err => {
                 console.error('Cloud save failed:', err);
